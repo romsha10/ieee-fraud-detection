@@ -34,39 +34,41 @@ def load_data():
         results = json.load(f)
     return X, y, results
 
-model, feature_cols = load_model()
+model, feature_cols               = load_model()
 X_sample, y_sample, model_results = load_data()
 
 # Compute Scores
-probs = model.predict_proba(X_sample[feature_cols])[:, 1]
-decisions = ["FRAUD" if p >= 0.5 else "LEGITIMATE" for p in probs]
+probs       = model.predict_proba(X_sample[feature_cols])[:, 1]
+decisions   = ["FRAUD" if p >= 0.5 else "LEGITIMATE" for p in probs]
 risk_levels = ["HIGH" if p > 0.7 else "MEDIUM" if p > 0.4 else "LOW" for p in probs]
 
 results_df = X_sample.copy()
 results_df["fraud_probability"] = probs
-results_df["decision"] = decisions
-results_df["risk_level"] = risk_levels
-results_df["actual"] = y_sample.values.flatten()
+results_df["decision"]          = decisions
+results_df["risk_level"]        = risk_levels
+results_df["actual"]            = y_sample.values.flatten()
 
 xgb_results = model_results["xgb"]
-rf_results = model_results["rf"]
+rf_results  = model_results["rf"]
 iso_results = model_results["iso"]
 
 # Sidebar
-st.sidebar.title("🏦 Fraud Detection")
+st.sidebar.title("Fraud Detection")
 st.sidebar.markdown("---")
 page = st.sidebar.radio(
     "Navigate",
-    ["ℹ️ How to Use", "📊 Overview", "🚨 Fraud Alerts", "🔍 Transaction Scorer", "📈 Model Performance"]
+    ["How to Use", "Overview", "Fraud Alerts", "Transaction Scorer", "Model Performance"]
 )
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Total Transactions:** {len(results_df):,}")
 st.sidebar.markdown(f"**Fraud Flagged:** {(results_df['decision']=='FRAUD').sum():,}")
 st.sidebar.markdown(f"**Fraud Rate:** {results_df['actual'].mean()*100:.2f}%")
 
+# =======================================================
 # PAGE 0 - HOW TO USE
-if page == "ℹ️ How to Use":
-    st.title("ℹ️ How to Use This Dashboard")
+# =======================================================
+if page == "How to Use":
+    st.title("How to Use This Dashboard")
     st.markdown("---")
 
     st.markdown("""
@@ -113,12 +115,12 @@ if page == "ℹ️ How to Use":
     **How to use it:**
     1. Use the **Risk Level filter** to focus on HIGH risk cases first
     2. Use the **score slider** to only see cases above a certain confidence level
-    3. Pick a row number in **"Investigate a Specific Alert"**
-    4. Click **"Run SHAP Explanation"** - this shows you exactly *why* the
+    3. Pick a row number in "Investigate a Specific Alert"
+    4. Click "Run SHAP Explanation" - this shows you exactly why the
        model thinks this transaction is fraud (e.g. amount is far above what
        this card normally spends, or the transaction happened at 3am)
-    5. Based on the explanation click **"Confirm as Fraud"** if it looks
-       genuinely suspicious, or **"Mark as False Positive"** if it looks
+    5. Based on the explanation click "Confirm as Fraud" if it looks
+       genuinely suspicious, or "Mark as False Positive" if it looks
        like a normal transaction the model got wrong
 
     **The goal:** Help a human analyst make a fast, informed decision instead
@@ -137,13 +139,13 @@ if page == "ℹ️ How to Use":
     1. Enter a **Transaction Amount** (try something unusual like $9999)
     2. Set the **Hour of Day** (try 3 AM vs 2 PM and compare the results)
     3. Set **Day of Week**, **Card Transaction Count**, and **Amount Deviation**
-    4. Tick **"Is Round Amount?"** if testing a round number like $500.00
-    5. Click **"Score Transaction Now"**
+    4. Tick "Is Round Amount?" if testing a round number like $500.00
+    5. Click "Score Transaction Now"
     6. Read the result - Decision (Fraud/Legitimate), Fraud Score %, and Risk Level
 
     **Try this experiment:**
-    Set amount to $50, hour to 2 PM, deviation to 0 → likely LEGITIMATE.
-    Now change amount to $5000, hour to 3 AM, deviation to 5 → likely FRAUD.
+    Set amount to $50, hour to 2 PM, deviation to 0 - likely LEGITIMATE.
+    Now change amount to $5000, hour to 3 AM, deviation to 5 - likely FRAUD.
     This shows you which factors the model cares about most.
 
     ---
@@ -172,13 +174,15 @@ if page == "ℹ️ How to Use":
 
     st.markdown("---")
     st.info("""
-    **Quick Start - New here?**
-    Start with **Overview** to get the big picture,
-    then go to **Fraud Alerts** to see the investigation workflow in action,
-    and try **Transaction Scorer** to experiment with your own transaction values.
+    Quick Start - New here?
+    Start with Overview to get the big picture,
+    then go to Fraud Alerts to see the investigation workflow in action,
+    and try Transaction Scorer to experiment with your own transaction values.
     """)
 
+# =======================================================
 # PAGE 1 - OVERVIEW
+# =======================================================
 elif page == "Overview":
     st.title("Fraud Detection - Overview Dashboard")
     st.markdown("---")
@@ -230,7 +234,9 @@ elif page == "Overview":
         st.pyplot(fig3)
         plt.close()
 
+# =======================================================
 # PAGE 2 - FRAUD ALERTS
+# =======================================================
 elif page == "Fraud Alerts":
     st.title("Fraud Alerts - Investigation Queue")
     st.markdown("---")
@@ -240,7 +246,7 @@ elif page == "Fraud Alerts":
     fraud_df["fraud_score_%"] = (fraud_df["fraud_probability"] * 100).round(1)
 
     col1, col2 = st.columns(2)
-    risk_filter = col1.multiselect("Filter by Risk Level",
+    risk_filter     = col1.multiselect("Filter by Risk Level",
                                         ["HIGH", "MEDIUM", "LOW"],
                                         default=["HIGH", "MEDIUM"])
     score_threshold = col2.slider("Minimum Fraud Score %", 50, 100, 50)
@@ -291,7 +297,9 @@ elif page == "Fraud Alerts":
     if col_q.button("Confirm as Fraud"):
         st.error("Confirmed as Fraud - case escalated to investigation team")
 
+# =======================================================
 # PAGE 3 - TRANSACTION SCORER
+# =======================================================
 elif page == "Transaction Scorer":
     st.title("Real-Time Transaction Scorer")
     st.markdown("Score any transaction instantly using the live model.")
@@ -331,7 +339,9 @@ elif page == "Transaction Scorer":
         r3.metric("Risk Level",  risk)
         st.progress(float(prob))
 
+# =======================================================
 # PAGE 4 - MODEL PERFORMANCE
+# =======================================================
 elif page == "Model Performance":
     st.title("Model Performance Metrics")
     st.markdown("---")
