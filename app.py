@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -15,55 +14,172 @@ st.set_page_config(
     layout="wide"
 )
 
+# Base Directory Fix
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Load Model and Data
 @st.cache_resource
 def load_model():
-    with open("xgb_model.pkl", "rb") as f:
+    with open(os.path.join(BASE_DIR, "xgb_model.pkl"), "rb") as f:
         model = pickle.load(f)
-    with open("feature_cols.pkl", "rb") as f:
+    with open(os.path.join(BASE_DIR, "feature_cols.pkl"), "rb") as f:
         feature_cols = pickle.load(f)
     return model, feature_cols
 
 @st.cache_data
 def load_data():
-    X = pd.read_csv("sample_transactions.csv")
-    y = pd.read_csv("sample_labels.csv")
-    with open("model_results.json", "r") as f:
+    X = pd.read_csv(os.path.join(BASE_DIR, "sample_transactions.csv"))
+    y = pd.read_csv(os.path.join(BASE_DIR, "sample_labels.csv"))
+    with open(os.path.join(BASE_DIR, "model_results.json"), "r") as f:
         results = json.load(f)
     return X, y, results
 
-model, feature_cols          = load_model()
+model, feature_cols = load_model()
 X_sample, y_sample, model_results = load_data()
 
-# Compute scores
-probs       = model.predict_proba(X_sample[feature_cols])[:, 1]
-decisions   = ["FRAUD" if p >= 0.5 else "LEGITIMATE" for p in probs]
+# Compute Scores
+probs = model.predict_proba(X_sample[feature_cols])[:, 1]
+decisions = ["FRAUD" if p >= 0.5 else "LEGITIMATE" for p in probs]
 risk_levels = ["HIGH" if p > 0.7 else "MEDIUM" if p > 0.4 else "LOW" for p in probs]
 
 results_df = X_sample.copy()
 results_df["fraud_probability"] = probs
-results_df["decision"]          = decisions
-results_df["risk_level"]        = risk_levels
-results_df["actual"]            = y_sample.values.flatten()
+results_df["decision"] = decisions
+results_df["risk_level"] = risk_levels
+results_df["actual"] = y_sample.values.flatten()
 
 xgb_results = model_results["xgb"]
-rf_results  = model_results["rf"]
+rf_results = model_results["rf"]
 iso_results = model_results["iso"]
 
 # Sidebar
-st.sidebar.title("Fraud Detection")
+st.sidebar.title("🏦 Fraud Detection")
 st.sidebar.markdown("---")
 page = st.sidebar.radio(
     "Navigate",
-    ["Overview", "Fraud Alerts", "Transaction Scorer", "Model Performance"]
+    ["ℹ️ How to Use", "📊 Overview", "🚨 Fraud Alerts", "🔍 Transaction Scorer", "📈 Model Performance"]
 )
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Total Transactions:** {len(results_df):,}")
 st.sidebar.markdown(f"**Fraud Flagged:** {(results_df['decision']=='FRAUD').sum():,}")
 st.sidebar.markdown(f"**Fraud Rate:** {results_df['actual'].mean()*100:.2f}%")
 
+# PAGE 0 - HOW TO USE
+if page == "ℹ️ How to Use":
+    st.title("ℹ️ How to Use This Dashboard")
+    st.markdown("---")
+
+    st.markdown("""
+    ## What Is This?
+
+    This is a **fraud detection system** for banking transactions. It uses a
+    machine learning model (XGBoost) trained on 590,000 real transactions to
+    predict whether a new transaction is **fraudulent** or **legitimate**,
+    and explains **why** it made that decision.
+
+    Think of it as a tool a bank's fraud analyst would use every day to
+    review suspicious transactions and decide what to do about them.
+    """)
+
+    st.markdown("---")
+    st.markdown("## What Each Page Does")
+
+    st.markdown("""
+    ### Overview
+    **What it shows:** A bird's-eye view of all transactions in the sample -
+    how many are fraud, how many are legitimate, and patterns like which
+    hours of the day see more fraud.
+
+    **Why it matters:** This is your starting point. It tells you the
+    overall health of the system - is fraud spiking? Is it concentrated
+    at certain times?
+
+    **How to read it:**
+    - The **KPI cards** at the top give quick numbers (total transactions, fraud flagged, etc.)
+    - The **Fraud Score Distribution** chart shows how confident the model is -
+      red bars on the right mean the model is very sure something is fraud
+    - The **Risk Level** chart groups transactions into HIGH / MEDIUM / LOW risk
+    - The **Fraud Rate by Hour** chart shows if fraud clusters at certain times of day
+
+    ---
+
+    ### Fraud Alerts
+    **What it shows:** A list of transactions the model has flagged as fraud,
+    sorted by how risky they are.
+
+    **Why it matters:** This is the **investigation queue** - exactly what
+    a fraud analyst opens every morning to decide which cases to investigate first.
+
+    **How to use it:**
+    1. Use the **Risk Level filter** to focus on HIGH risk cases first
+    2. Use the **score slider** to only see cases above a certain confidence level
+    3. Pick a row number in **"Investigate a Specific Alert"**
+    4. Click **"Run SHAP Explanation"** - this shows you exactly *why* the
+       model thinks this transaction is fraud (e.g. amount is far above what
+       this card normally spends, or the transaction happened at 3am)
+    5. Based on the explanation click **"Confirm as Fraud"** if it looks
+       genuinely suspicious, or **"Mark as False Positive"** if it looks
+       like a normal transaction the model got wrong
+
+    **The goal:** Help a human analyst make a fast, informed decision instead
+    of staring at raw numbers.
+
+    ---
+
+    ### Transaction Scorer
+    **What it shows:** A live "what if" tool - enter the details of any
+    transaction and instantly see if the model would flag it as fraud.
+
+    **Why it matters:** This simulates what happens in real time when a
+    new transaction arrives - the model scores it in milliseconds.
+
+    **How to use it:**
+    1. Enter a **Transaction Amount** (try something unusual like $9999)
+    2. Set the **Hour of Day** (try 3 AM vs 2 PM and compare the results)
+    3. Set **Day of Week**, **Card Transaction Count**, and **Amount Deviation**
+    4. Tick **"Is Round Amount?"** if testing a round number like $500.00
+    5. Click **"Score Transaction Now"**
+    6. Read the result - Decision (Fraud/Legitimate), Fraud Score %, and Risk Level
+
+    **Try this experiment:**
+    Set amount to $50, hour to 2 PM, deviation to 0 → likely LEGITIMATE.
+    Now change amount to $5000, hour to 3 AM, deviation to 5 → likely FRAUD.
+    This shows you which factors the model cares about most.
+
+    ---
+
+    ### Model Performance
+    **What it shows:** How well each of the three models (XGBoost, Random
+    Forest, Isolation Forest) performs using standard evaluation metrics.
+
+    **Why it matters:** Not all models are equal. This page lets you compare
+    them and understand why XGBoost was chosen as the primary model.
+
+    **How to read the metrics:**
+    - **Precision** - Of all transactions flagged as fraud, what % were actually fraud?
+      High precision means few false alarms on legitimate customers.
+    - **Recall** - Of all actual fraud cases, what % did the model catch?
+      High recall means fewer frauds slipping through undetected.
+    - **F1 Score** - A single number balancing both precision and recall.
+    - **AUC-ROC** - Overall ability to distinguish fraud from legitimate.
+      Closer to 1.0 is better. 0.5 means the model is no better than random guessing.
+
+    **Why both precision AND recall matter:**
+    A model that flags everything as fraud has perfect recall but terrible precision
+    - it would block every legitimate customer. A model that flags nothing has
+    perfect precision but catches zero fraud. The best model balances both.
+    """)
+
+    st.markdown("---")
+    st.info("""
+    **Quick Start - New here?**
+    Start with **Overview** to get the big picture,
+    then go to **Fraud Alerts** to see the investigation workflow in action,
+    and try **Transaction Scorer** to experiment with your own transaction values.
+    """)
+
 # PAGE 1 - OVERVIEW
-if page == "Overview":
+elif page == "Overview":
     st.title("Fraud Detection - Overview Dashboard")
     st.markdown("---")
 
@@ -124,7 +240,7 @@ elif page == "Fraud Alerts":
     fraud_df["fraud_score_%"] = (fraud_df["fraud_probability"] * 100).round(1)
 
     col1, col2 = st.columns(2)
-    risk_filter     = col1.multiselect("Filter by Risk Level",
+    risk_filter = col1.multiselect("Filter by Risk Level",
                                         ["HIGH", "MEDIUM", "LOW"],
                                         default=["HIGH", "MEDIUM"])
     score_threshold = col2.slider("Minimum Fraud Score %", 50, 100, 50)
@@ -149,7 +265,7 @@ elif page == "Fraud Alerts":
                                  value=0)
 
     if st.button("Run SHAP Explanation"):
-        selected  = filtered.iloc[int(alert_idx)]
+        selected = filtered.iloc[int(alert_idx)]
         with st.spinner("Computing SHAP explanation..."):
             explainer_dash = shap.TreeExplainer(model)
             txn_df    = pd.DataFrame([selected[feature_cols]])
@@ -191,7 +307,7 @@ elif page == "Transaction Scorer":
     amt_dev    = col5.number_input("Amount Deviation", value=0.5)
     round_amt  = st.checkbox("Is Round Amount?")
 
-    if st.button("⚡ Score Transaction Now"):
+    if st.button("Score Transaction Now"):
         raw = {col: 0 for col in feature_cols}
         raw.update({
             "TransactionAmt":         amt,
