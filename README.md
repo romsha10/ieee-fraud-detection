@@ -1,5 +1,5 @@
 # 🏦 IEEE-CIS Financial Fraud Detection System
-
+Python | XGBoost | SHAP | Streamlit | License (MIT) | Kaggle
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square\&logo=python)
 ![XGBoost](https://img.shields.io/badge/XGBoost-1.7+-orange?style=flat-square)
 ![SHAP](https://img.shields.io/badge/SHAP-Explainability-green?style=flat-square)
