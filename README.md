@@ -1,19 +1,13 @@
-# 🏦 IEEE-CIS Financial Fraud Detection System
+# IEEE-CIS Financial Fraud Detection System
 Python | XGBoost | SHAP | Streamlit | License (MIT) | Kaggle
-![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square\&logo=python)
-![XGBoost](https://img.shields.io/badge/XGBoost-1.7+-orange?style=flat-square)
-![SHAP](https://img.shields.io/badge/SHAP-Explainability-green?style=flat-square)
-![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red?style=flat-square\&logo=streamlit)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
-![Kaggle](https://img.shields.io/badge/Kaggle-IEEE--CIS-blue?style=flat-square\&logo=kaggle)
 
-## 🚀 Live Demo
+## Live Demo
 
-👉 **[Open Streamlit Dashboard](#)**
+**[Open Streamlit Dashboard](https://ieee-fraud-detection.streamlit.app/)**
 
 ---
 
-## 📖 Overview
+## Overview
 
 A production-style fraud detection system built on the IEEE-CIS Fraud Detection dataset containing **590,540 banking transactions**.
 
@@ -31,22 +25,22 @@ The project covers the complete machine learning lifecycle:
 
 ---
 
-## 🎯 Business Problem
+## Business Problem
 
 Financial fraud costs the banking industry billions annually.
 
 An effective fraud detection system must:
 
-* ✅ Maximise fraud detection (**Recall**)
-* ✅ Minimise false alarms (**Precision**)
-* ✅ Explain every decision (**SHAP**)
-* ✅ Score transactions in milliseconds (**Real-Time Inference**)
+* Maximise fraud detection (**Recall**)
+* Minimise false alarms (**Precision**)
+* Explain every decision (**SHAP**)
+* Score transactions in milliseconds (**Real-Time Inference**)
 
 This project addresses all four requirements.
 
 ---
 
-## 📊 Dataset
+## Dataset
 
 **Source:** IEEE-CIS Fraud Detection (Kaggle)
 
@@ -67,39 +61,39 @@ The severe class imbalance makes fraud detection a challenging machine learning 
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```text
 Raw Data
-    ↓
+    |
 Data Processing & Merging
-    ↓
+    |
 EDA
-    ↓
+    |
 Feature Engineering
-    ↓
+    |
 Preprocessing
-    ↓
+    |
 Train/Test Split
-    ↓
+    |
 SMOTE
-    ↓
+    |
 Model Training
-    ↓
+    |
 Model Evaluation
-    ↓
+    |
 SHAP Explainability
-    ↓
+    |
 Real-Time Scoring
-    ↓
+    |
 SQL Storage
-    ↓
+    |
 Streamlit Dashboard
 ```
 
 ---
 
-## ⚙️ Feature Engineering
+## Feature Engineering
 
 ### Time Features
 
@@ -129,7 +123,7 @@ Streamlit Dashboard
 
 ---
 
-## 🤖 Models
+## Models
 
 ### 1. XGBoost (Primary Model)
 
@@ -151,7 +145,7 @@ Streamlit Dashboard
 
 ---
 
-## ⚖️ Handling Class Imbalance
+## Handling Class Imbalance
 
 ### SMOTE Oversampling
 
@@ -177,7 +171,7 @@ Used within XGBoost to increase penalties for missed fraud cases.
 
 ---
 
-## 📈 Results
+## Results
 
 ### Model Performance
 
@@ -185,7 +179,7 @@ Used within XGBoost to increase penalties for missed fraud cases.
 | ---------------- | --------- | ------ | ----- | ------- |
 | XGBoost          | 0.636     | 0.552  | 0.591 | 0.923   |
 | Random Forest    | 0.346     | 0.561  | 0.428 | 0.877   |
-| Isolation Forest | 0.165     | 0.089  | 0.116 | —       |
+| Isolation Forest | 0.165     | 0.089  | 0.116 | -       |
 
 ### Best Model: XGBoost
 
@@ -196,7 +190,7 @@ Used within XGBoost to increase penalties for missed fraud cases.
 
 ---
 
-## 🔍 Explainable AI with SHAP
+## Explainable AI with SHAP
 
 Each fraud prediction includes:
 
@@ -221,7 +215,7 @@ Risk Reducers:
 
 ---
 
-## ⚡ Real-Time Fraud Scoring
+## Real-Time Fraud Scoring
 
 Average inference latency:
 
@@ -243,7 +237,7 @@ Example output:
 
 ---
 
-## 🖥️ Streamlit Dashboard
+## Streamlit Dashboard
 
 ### Dashboard Modules
 
@@ -264,7 +258,7 @@ Example output:
 
 ---
 
-## 🗄️ SQL Integration
+## SQL Integration
 
 Three production-style tables:
 
@@ -281,7 +275,7 @@ Supports:
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Category           | Technology          |
 | ------------------ | ------------------- |
@@ -298,7 +292,7 @@ Supports:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 ieee-fraud-detection/
@@ -323,7 +317,7 @@ ieee-fraud-detection/
 
 ---
 
-## 🚀 Running the Project
+## Running the Project
 
 ### Clone Repository
 
@@ -346,7 +340,7 @@ streamlit run hf_deploy/app.py
 
 ---
 
-## 💡 Key Learnings
+## Key Learnings
 
 * Accuracy is misleading on imbalanced datasets
 * SMOTE should only be applied to training data
@@ -356,7 +350,7 @@ streamlit run hf_deploy/app.py
 
 ---
 
-## 🔮 Future Improvements
+## Future Improvements
 
 * FastAPI deployment
 * Kafka streaming integration
@@ -368,22 +362,11 @@ streamlit run hf_deploy/app.py
 
 ---
 
-## 👤 Author
-
-**Your Name**
-
-* LinkedIn: your-linkedin-url
-* GitHub: your-github-url
-* Email: [your-email@example.com](mailto:your-email@example.com)
-
----
-
-## 📜 License
+## License
 
 MIT License
 
 ---
-
 ### Dataset Credit
 
 IEEE-CIS Fraud Detection Dataset provided by Vesta Corporation through Kaggle.
