@@ -34,22 +34,22 @@ def load_data():
         results = json.load(f)
     return X, y, results
 
-model, feature_cols               = load_model()
+model, feature_cols = load_model()
 X_sample, y_sample, model_results = load_data()
 
 # Compute Scores
-probs       = model.predict_proba(X_sample[feature_cols])[:, 1]
-decisions   = ["FRAUD" if p >= 0.5 else "LEGITIMATE" for p in probs]
+probs = model.predict_proba(X_sample[feature_cols])[:, 1]
+decisions = ["FRAUD" if p >= 0.5 else "LEGITIMATE" for p in probs]
 risk_levels = ["HIGH" if p > 0.7 else "MEDIUM" if p > 0.4 else "LOW" for p in probs]
 
 results_df = X_sample.copy()
 results_df["fraud_probability"] = probs
-results_df["decision"]          = decisions
-results_df["risk_level"]        = risk_levels
-results_df["actual"]            = y_sample.values.flatten()
+results_df["decision"] = decisions
+results_df["risk_level"] = risk_levels
+results_df["actual"] = y_sample.values.flatten()
 
 xgb_results = model_results["xgb"]
-rf_results  = model_results["rf"]
+rf_results = model_results["rf"]
 iso_results = model_results["iso"]
 
 # Sidebar
@@ -64,9 +64,7 @@ st.sidebar.markdown(f"**Total Transactions:** {len(results_df):,}")
 st.sidebar.markdown(f"**Fraud Flagged:** {(results_df['decision']=='FRAUD').sum():,}")
 st.sidebar.markdown(f"**Fraud Rate:** {results_df['actual'].mean()*100:.2f}%")
 
-# =======================================================
 # PAGE 0 - HOW TO USE
-# =======================================================
 if page == "How to Use":
     st.title("How to Use This Dashboard")
     st.markdown("---")
@@ -180,9 +178,7 @@ if page == "How to Use":
     and try Transaction Scorer to experiment with your own transaction values.
     """)
 
-# =======================================================
 # PAGE 1 - OVERVIEW
-# =======================================================
 elif page == "Overview":
     st.title("Fraud Detection - Overview Dashboard")
     st.markdown("---")
@@ -234,9 +230,7 @@ elif page == "Overview":
         st.pyplot(fig3)
         plt.close()
 
-# =======================================================
 # PAGE 2 - FRAUD ALERTS
-# =======================================================
 elif page == "Fraud Alerts":
     st.title("Fraud Alerts - Investigation Queue")
     st.markdown("---")
@@ -246,7 +240,7 @@ elif page == "Fraud Alerts":
     fraud_df["fraud_score_%"] = (fraud_df["fraud_probability"] * 100).round(1)
 
     col1, col2 = st.columns(2)
-    risk_filter     = col1.multiselect("Filter by Risk Level",
+    risk_filter = col1.multiselect("Filter by Risk Level",
                                         ["HIGH", "MEDIUM", "LOW"],
                                         default=["HIGH", "MEDIUM"])
     score_threshold = col2.slider("Minimum Fraud Score %", 50, 100, 50)
@@ -274,7 +268,7 @@ elif page == "Fraud Alerts":
         selected = filtered.iloc[int(alert_idx)]
         with st.spinner("Computing SHAP explanation..."):
             explainer_dash = shap.TreeExplainer(model)
-            txn_df    = pd.DataFrame([selected[feature_cols]])
+            txn_df = pd.DataFrame([selected[feature_cols]])
             shap_vals = explainer_dash.shap_values(txn_df)
             feat_shap = pd.Series(shap_vals[0], index=feature_cols)
             top_fraud = feat_shap.nlargest(5)
@@ -297,9 +291,7 @@ elif page == "Fraud Alerts":
     if col_q.button("Confirm as Fraud"):
         st.error("Confirmed as Fraud - case escalated to investigation team")
 
-# =======================================================
 # PAGE 3 - TRANSACTION SCORER
-# =======================================================
 elif page == "Transaction Scorer":
     st.title("Real-Time Transaction Scorer")
     st.markdown("Score any transaction instantly using the live model.")
@@ -339,9 +331,7 @@ elif page == "Transaction Scorer":
         r3.metric("Risk Level",  risk)
         st.progress(float(prob))
 
-# =======================================================
 # PAGE 4 - MODEL PERFORMANCE
-# =======================================================
 elif page == "Model Performance":
     st.title("Model Performance Metrics")
     st.markdown("---")
